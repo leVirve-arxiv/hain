@@ -6,7 +6,7 @@ class ForkTransport {
     this.listeners = {};
     this.onceListeners = {};
   }
-  activate() {
+  activate(agentName) {
     this.processObject.on('message', this.onMessage.bind(this));
   }
   on(tag, handler) {
