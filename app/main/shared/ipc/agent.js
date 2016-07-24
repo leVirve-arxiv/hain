@@ -7,12 +7,13 @@ class Agent {
     this.name = name;
     this.transport = null;
     this.funcs = {};
-    this.funcId = 0;
+    this.nextCallId = 0;
   }
   connect(transport) {
     return new Promise((resolve, reject) => {
-      this.transport = transport;
       // TODO add error handling
+      this.transport = transport;
+      this.transport.activate(this.name);
       this.transport.on('repl:connect', (data) => resolve());
       this.transport.send('connect', { agentName: this.name });
       this.startListenForFunctionCalls();
@@ -20,21 +21,22 @@ class Agent {
   }
   startListenForFunctionCalls() {
     this.transport.on('call', (data) => {
-      const { funcId, funcName, args } = data;
-      const replyTag = `repl:call:${funcId}`;
+      const { callId, funcName, args } = data;
+      const replyTag = `repl:call:${callId}`;
       const selectedGenerator = this.funcs[funcName];
       if (selectedGenerator === undefined) {
         return this.transport.send(replyTag, {
+          callId,
           error: 'undefined function'
         });
       }
 
       return co(selectedGenerator.apply(this, args))
         .then((result) => {
-          this.transport.send(replyTag, { result });
+          this.transport.send(replyTag, { callId, result });
         })
         .catch((error) => {
-          this.transport.send(replyTag, { error });
+          this.transport.send(replyTag, { callId, error });
         });
     });
   }
@@ -42,16 +44,16 @@ class Agent {
     this.funcs[funcName] = generator;
   }
   call(targetAgent, funcName, ...args) {
-    const thisFuncId = this.funcId++;
+    const thisCallId = this.nextCallId++;
     return new Promise((resolve, reject) => {
-      this.transport.once(`repl:call:${thisFuncId}`, (data) => {
+      this.transport.once(`repl:call:${thisCallId}`, (data) => {
         const { result, error } = data;
         if (error)
           return reject(error);
         return resolve(result);
       });
       this.transport.send('call', {
-        funcId: thisFuncId,
+        callId: thisCallId,
         targetAgent,
         funcName,
         args

@@ -9,6 +9,7 @@ class TransportMock {
     this.onceReceivers = {};
     this.hooks = {};
   }
+  activate(agentName) {}
   send(tag, data) {
     const hook = this.hooks[tag];
     if (hook)
@@ -60,7 +61,7 @@ describe('Agent', () => {
 
   describe('call', () => {
 
-    pit('should call targetAgent function by funcName', () => {
+    pit('should call function by funcName', () => {
       return co(function* () {
         const transportMock = new TransportMock();
         setupTransportMockForConnection(transportMock);
@@ -69,11 +70,11 @@ describe('Agent', () => {
         yield agent.connect(transportMock);
 
         transportMock.hook('call', (data) => {
-          const { funcId, targetAgent, funcName, args } = data;
+          const { callId, funcName, args } = data;
           if (funcName === 'sum') {
             const a = args[0];
             const b = args[1];
-            transportMock.emit(`repl:call:${funcId}`, {
+            transportMock.emit(`repl:call:${callId}`, {
               result: a + b
             });
           }
@@ -92,9 +93,9 @@ describe('Agent', () => {
         yield agent.connect(transportMock);
 
         transportMock.hook('call', (data) => {
-          const { funcId, targetAgent, funcName, args } = data;
+          const { callId, funcName, args } = data;
           if (funcName === 'sum') {
-            transportMock.emit(`repl:call:${funcId}`, {
+            transportMock.emit(`repl:call:${callId}`, {
               error: 'has error'
             });
           }
@@ -126,14 +127,14 @@ describe('Agent', () => {
 
         agent.connect(transportMock);
 
-        const funcId = 0;
-        transportMock.hook(`repl:call:${funcId}`, (data) => {
+        const callId = 0;
+        transportMock.hook(`repl:call:${callId}`, (data) => {
           const { result, error } = data;
           expect(result).toBe('okay');
           resolve();
         });
         transportMock.emit('call', {
-          funcId,
+          callId,
           funcName: 'test'
         });
       });
@@ -152,14 +153,14 @@ describe('Agent', () => {
 
         agent.connect(transportMock);
 
-        const funcId = 0;
-        transportMock.hook(`repl:call:${funcId}`, (data) => {
+        const callId = 0;
+        transportMock.hook(`repl:call:${callId}`, (data) => {
           const { result, error } = data;
           expect(result).toBe(10);
           resolve();
         });
         transportMock.emit('call', {
-          funcId,
+          callId,
           funcName: 'multiply',
           args: [2, 5]
         });
@@ -174,14 +175,14 @@ describe('Agent', () => {
         const agent = new Agent('agent0');
         agent.connect(transportMock);
 
-        const funcId = 0;
-        transportMock.hook(`repl:call:${funcId}`, (data) => {
+        const callId = 0;
+        transportMock.hook(`repl:call:${callId}`, (data) => {
           const { result, error } = data;
           expect(error).toBeDefined();
           resolve();
         });
         transportMock.emit('call', {
-          funcId,
+          callId,
           funcName: 'function_not_exists',
           args: [1, 5]
         });
@@ -199,14 +200,14 @@ describe('Agent', () => {
         });
         agent.connect(transportMock);
 
-        const funcId = 0;
-        transportMock.hook(`repl:call:${funcId}`, (data) => {
+        const callId = 0;
+        transportMock.hook(`repl:call:${callId}`, (data) => {
           const { result, error } = data;
           expect(error).toBe('multiply error');
           resolve();
         });
         transportMock.emit('call', {
-          funcId,
+          callId,
           funcName: 'multiply',
           args: [1, 5]
         });
