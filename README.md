@@ -8,7 +8,7 @@ I always dreamed of an alternative to Alfred on Windows, that is made with JavaS
 so, I made it.
 
 <p align="center">
-  <img src="docs/images/demo.gif" width="600"/>
+  <img src="docs/images/demo_slv.png" width="600"/>
 </p>
 
 ## Features

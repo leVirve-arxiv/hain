@@ -436,20 +436,12 @@ class AppContainer extends React.Component {
       <MuiThemeProvider muiTheme={muiTheme}>
       <div>
         <div key="queryWrapper" style={{ position: 'fixed', 'zIndex': 1000, top: 0, width: '776px' }}>
-          <div style={{ marginTop: '7px', marginBottom: '-8px', color: '#a7a7a7', fontSize: '0.7em' }}>
-            <table style={{ width: '100%' }}>
-              <tr>
-                <td width="50%">Hain</td>
-                <td width="50%" style={{ textAlign: 'right' }}>
-                <kbd>↓</kbd> <kbd>↑</kbd> to navigate, <kbd>tab</kbd> to expand(redirect), <kbd>enter</kbd> to execute
-                </td>
-              </tr>
-            </table>
-          </div>
           <TextField
             key="query"
             ref="query"
             fullWidth={true}
+            underlineShow={false}
+            style={{ padding: '5px 10px', fontSize: '1.2em' }}
             value={this.state.query}
             onKeyDown={this.handleKeyDown.bind(this)}
             onChange={this.handleChange.bind(this)}
